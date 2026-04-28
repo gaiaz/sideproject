@@ -984,10 +984,11 @@
 
     /* ── CTA ─────────────────────────────────────────── */
     .cta-section {
-      padding: 0 40px 80px;
+      padding: 0 40px clamp(170px, 13.23vw, 240px);
       margin-top: clamp(-104px, -6.878vw, -56px);
       position: relative;
       z-index: 1;
+      overflow: visible;
     }
 
     .cta-block {
@@ -1000,6 +1001,8 @@
       align-items: center;
       justify-content: center;
       padding-top: clamp(48px, 5.556vw, 84px);
+      transform-origin: top center;
+      will-change: transform;
     }
 
     .cta-button {
@@ -2699,6 +2702,48 @@
           },
         });
       });
+    }
+
+    const ctaBlock = document.querySelector('.cta-block');
+    const ctaButton = document.querySelector('.cta-button');
+
+    if (ctaBlock && canRunGsap && !prefersReducedMotion) {
+      const ctaReveal = gsap.timeline({
+        scrollTrigger: {
+          trigger: '.cta-section',
+          start: 'top 72%',
+          end: 'top 42%',
+          scrub: 0.85,
+        },
+      });
+
+      ctaReveal.fromTo(ctaBlock, {
+        autoAlpha: 0,
+        y: -118,
+        scaleY: 0.58,
+        borderBottomLeftRadius: 34,
+        borderBottomRightRadius: 34,
+      }, {
+        autoAlpha: 1,
+        y: 0,
+        scaleY: 1,
+        borderBottomLeftRadius: 48,
+        borderBottomRightRadius: 48,
+        ease: 'none',
+      });
+
+      if (ctaButton) {
+        ctaReveal.fromTo(ctaButton, {
+          autoAlpha: 0,
+          y: -24,
+          scale: 0.96,
+        }, {
+          autoAlpha: 1,
+          y: 0,
+          scale: 1,
+          ease: 'none',
+        }, 0.38);
+      }
     }
 
     const whyTitle = document.querySelector('.why-title-reveal');
