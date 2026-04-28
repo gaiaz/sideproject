@@ -952,6 +952,7 @@
       border-radius: 16px;
       overflow: hidden;
       background: #d9d9d9;
+      perspective: 900px;
     }
 
     .work-card-image img {
@@ -965,7 +966,11 @@
     }
 
     .work-card:hover .work-card-image img {
-      transform: translate3d(var(--card-pan-x, 0px), var(--card-pan-y, 0px), 0) scale(1.075);
+      transform:
+        translate3d(var(--card-pan-x, 0px), var(--card-pan-y, 0px), 0)
+        rotateX(var(--card-tilt-x, 0deg))
+        rotateY(var(--card-tilt-y, 0deg))
+        scale(1.095);
     }
 
     .work-card-info {
@@ -2585,8 +2590,10 @@
           const offsetX = (event.clientX - rect.left) / rect.width - 0.5;
           const offsetY = (event.clientY - rect.top) / rect.height - 0.5;
 
-          cardImage.style.setProperty('--card-pan-x', `${(-offsetX * 18).toFixed(2)}px`);
-          cardImage.style.setProperty('--card-pan-y', `${(-offsetY * 14).toFixed(2)}px`);
+          cardImage.style.setProperty('--card-pan-x', `${(-offsetX * 24).toFixed(2)}px`);
+          cardImage.style.setProperty('--card-pan-y', `${(-offsetY * 18).toFixed(2)}px`);
+          cardImage.style.setProperty('--card-tilt-x', `${(offsetY * 7).toFixed(2)}deg`);
+          cardImage.style.setProperty('--card-tilt-y', `${(-offsetX * 7).toFixed(2)}deg`);
         });
 
         card.addEventListener('pointerenter', () => {
@@ -2600,6 +2607,8 @@
           if (cardImage) {
             cardImage.style.setProperty('--card-pan-x', '0px');
             cardImage.style.setProperty('--card-pan-y', '0px');
+            cardImage.style.setProperty('--card-tilt-x', '0deg');
+            cardImage.style.setProperty('--card-tilt-y', '0deg');
           }
         });
       });
