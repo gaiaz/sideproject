@@ -494,6 +494,7 @@
       width: 100%;
       height: clamp(72px, 10.5vw, 154px);
       gap: 8px;
+      perspective: 900px;
     }
 
     .hero-line-one,
@@ -516,6 +517,49 @@
       color: var(--black);
       white-space: nowrap;
       flex-shrink: 0;
+    }
+
+    .hero-swap-shell {
+      display: inline-block;
+      position: relative;
+      vertical-align: baseline;
+      overflow: hidden;
+      transform-origin: left center;
+      will-change: width;
+    }
+
+    .hero-swap-word {
+      position: absolute;
+      left: 0;
+      top: 0;
+      display: block;
+      white-space: nowrap;
+      clip-path: inset(0 0 0 0);
+      will-change: clip-path;
+    }
+
+    .hero-swap-word--current {
+      position: relative;
+    }
+
+    .hero-swap-word--next {
+      clip-path: inset(0 100% 0 0);
+      pointer-events: none;
+    }
+
+    .hero-line-third .hero-swap-shell {
+      transform: translateY(0);
+    }
+
+    .hero-phrase {
+      display: inline-flex;
+      align-items: baseline;
+      column-gap: 0.14em;
+    }
+
+    .hero-static-word {
+      display: inline-block;
+      line-height: 1;
     }
 
     /* ── PILLS ───────────────────────────────────────── */
@@ -1960,7 +2004,10 @@
           <div class="hero-line hero-line-one">
             <span class="hero-text">HOW</span>
             <div class="pill-orange pill-grow hero-pill-one"></div>
-            <span class="hero-text">CRAZY</span>
+            <span class="hero-text hero-swap-shell hero-swap-shell--tone" aria-label="CRAZY">
+              <span class="hero-swap-word hero-swap-word--current">CRAZY</span>
+              <span class="hero-swap-word hero-swap-word--next" aria-hidden="true"></span>
+            </span>
           </div>
 
           <!-- Line 2: [outline CAN YOUR] [grow pill] -->
@@ -1974,7 +2021,7 @@
           <!-- Line 3: [fixed pill] SPOT BE [asterisco] -->
           <div class="hero-line hero-line-third">
             <div class="pill-orange pill-fixed"></div>
-            <span class="hero-text">SPOT BE</span>
+            <span class="hero-text hero-phrase"><span class="hero-swap-shell hero-swap-shell--subject" aria-label="SPOT"><span class="hero-swap-word hero-swap-word--current">SPOT</span><span class="hero-swap-word hero-swap-word--next" aria-hidden="true"></span></span><span class="hero-static-word">BE</span></span>
             <span class="asterisk" aria-hidden="true">*</span>
           </div>
 
@@ -2470,15 +2517,191 @@
     const scrollIndicator = document.querySelector('.scroll-indicator');
     const heroTextLayer = document.querySelector('.hero-inner');
     const heroPills = Array.from(document.querySelectorAll('.hero-pill-one, .hero-pill-two, .pill-fixed'));
+    const heroToneShell = document.querySelector('.hero-swap-shell--tone');
+    const heroSubjectShell = document.querySelector('.hero-swap-shell--subject');
+    const heroToneCurrent = heroToneShell?.querySelector('.hero-swap-word--current');
+    const heroToneNext = heroToneShell?.querySelector('.hero-swap-word--next');
+    const heroSubjectCurrent = heroSubjectShell?.querySelector('.hero-swap-word--current');
+    const heroSubjectNext = heroSubjectShell?.querySelector('.hero-swap-word--next');
+    const heroPhrase = document.querySelector('.hero-phrase');
 
     if (hero && media && imageWrap) {
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       let targetProgress = 0;
       let smoothProgress = 0;
       let metrics = null;
+      let heroWordIndex = 0;
+      let heroWordTimer = null;
+      let heroDynamicPillWidths = null;
+      const heroPillProxy = { first: 0, third: 0 };
+
+      const heroWordSets = [
+        { tone: 'CRAZY', subject: 'SPOT' },
+        { tone: 'BOLD', subject: 'LOGO' },
+        { tone: 'CATCHY', subject: 'SOCIAL' },
+      ];
 
       const clamp01 = (value) => Math.min(Math.max(value, 0), 1);
       const lerp = (start, end, progress) => start + (end - start) * progress;
+      const getHeroLineGap = (line) => {
+        if (!line) return 0;
+        const styles = getComputedStyle(line);
+        return parseFloat(styles.columnGap || styles.gap) || 0;
+      };
+
+      function measureHeroText(reference, text) {
+        if (!reference) return 0;
+
+        const referenceStyles = getComputedStyle(reference);
+        const measurer = document.createElement('span');
+        measurer.textContent = text;
+        measurer.style.position = 'absolute';
+        measurer.style.left = '-9999px';
+        measurer.style.top = '0';
+        measurer.style.visibility = 'hidden';
+        measurer.style.whiteSpace = 'nowrap';
+        measurer.style.fontFamily = referenceStyles.fontFamily;
+        measurer.style.fontSize = referenceStyles.fontSize;
+        measurer.style.fontWeight = referenceStyles.fontWeight;
+        measurer.style.letterSpacing = referenceStyles.letterSpacing;
+        measurer.style.lineHeight = referenceStyles.lineHeight;
+        document.body.appendChild(measurer);
+        const width = measurer.getBoundingClientRect().width;
+        measurer.remove();
+        return width;
+      }
+
+      function getHeroSwapWidthsForText(toneText, subjectText) {
+        if (!metrics || !heroToneShell || !heroSubjectShell || !heroPhrase) return null;
+
+        const lineOne = document.querySelector('.hero-line-one');
+        const lineThree = document.querySelector('.hero-line-third');
+        const howWord = lineOne?.querySelector('.hero-text:first-child');
+        const asterisk = lineThree?.querySelector('.asterisk');
+        const gapOne = getHeroLineGap(lineOne);
+        const gapThree = getHeroLineGap(lineThree);
+
+        const defaultToneWidth = measureHeroText(heroToneShell, heroWordSets[0].tone);
+        const nextToneWidth = measureHeroText(heroToneShell, toneText);
+        const nextSubjectWidth = measureHeroText(heroSubjectShell, subjectText);
+        const defaultPhraseWidth = measureHeroText(heroPhrase, `${heroWordSets[0].subject} BE`);
+        const nextPhraseWidth = measureHeroText(heroPhrase, `${subjectText} BE`);
+
+        const lineOneBaseWidth =
+          (howWord?.getBoundingClientRect().width || 0) +
+          metrics.pillWidths[0] +
+          defaultToneWidth +
+          gapOne * 2;
+
+        const lineThreeBaseWidth =
+          metrics.pillWidths[2] +
+          defaultPhraseWidth +
+          (asterisk?.getBoundingClientRect().width || 0) +
+          gapThree * 2;
+
+        return {
+          first: Math.max(96, lineOneBaseWidth - (howWord?.getBoundingClientRect().width || 0) - nextToneWidth - gapOne * 2),
+          third: Math.max(72, lineThreeBaseWidth - nextPhraseWidth - (asterisk?.getBoundingClientRect().width || 0) - gapThree * 2),
+          tone: nextToneWidth,
+          subject: nextSubjectWidth,
+        };
+      }
+
+      function getHeroSwapWidths(wordSet) {
+        return getHeroSwapWidthsForText(wordSet.tone, wordSet.subject);
+      }
+
+      function syncHeroSwapPills(wordSet = heroWordSets[heroWordIndex]) {
+        if (!metrics) return;
+        const widths = getHeroSwapWidths(wordSet);
+        if (!widths) return;
+
+        heroDynamicPillWidths = metrics.pillWidths.slice();
+        heroDynamicPillWidths[0] = widths.first;
+        heroDynamicPillWidths[2] = widths.third;
+        heroPillProxy.first = widths.first;
+        heroPillProxy.third = widths.third;
+        heroToneShell.style.width = `${widths.tone}px`;
+        heroSubjectShell.style.width = `${widths.subject}px`;
+      }
+
+      function tweenHeroSwapPillsTo(wordSet, duration = 1.45) {
+        if (!metrics || !canRunGsap) return;
+        const widths = getHeroSwapWidths(wordSet);
+        if (!widths) return;
+
+        gsap.to(heroPillProxy, {
+          first: widths.first,
+          third: widths.third,
+          duration,
+          ease: 'power2.inOut',
+          overwrite: true,
+          onUpdate: () => {
+            heroDynamicPillWidths = metrics.pillWidths.slice();
+            heroDynamicPillWidths[0] = heroPillProxy.first;
+            heroDynamicPillWidths[2] = heroPillProxy.third;
+            renderHeroMedia(smoothProgress);
+          },
+        });
+      }
+
+      function scheduleHeroWordSwap() {
+        window.clearTimeout(heroWordTimer);
+        if (!canRunGsap || reduceMotion || !heroToneCurrent || !heroToneNext || !heroSubjectCurrent || !heroSubjectNext) return;
+
+        heroWordTimer = window.setTimeout(() => {
+          swapHeroWords((heroWordIndex + 1) % heroWordSets.length);
+        }, 3000);
+      }
+
+      function swapHeroWords(nextIndex) {
+        if (!metrics || !canRunGsap || !heroToneShell || !heroSubjectShell || !heroToneCurrent || !heroToneNext || !heroSubjectCurrent || !heroSubjectNext) return;
+
+        const nextWords = heroWordSets[nextIndex];
+        const targetWidths = getHeroSwapWidths(nextWords);
+        if (!targetWidths) return;
+
+        const currentWords = [heroToneCurrent, heroSubjectCurrent];
+        const nextWordLayers = [heroToneNext, heroSubjectNext];
+
+        heroToneNext.textContent = nextWords.tone;
+        heroSubjectNext.textContent = nextWords.subject;
+        heroToneShell.setAttribute('aria-label', nextWords.tone);
+        heroSubjectShell.setAttribute('aria-label', nextWords.subject);
+
+        gsap.set(nextWordLayers, { clipPath: 'inset(0 100% 0 0)' });
+        tweenHeroSwapPillsTo(nextWords, 1.05);
+
+        gsap.timeline({
+          defaults: { ease: 'power4.inOut' },
+          onComplete: () => {
+            heroWordIndex = nextIndex;
+            heroToneCurrent.textContent = nextWords.tone;
+            heroSubjectCurrent.textContent = nextWords.subject;
+            gsap.set(currentWords, { clipPath: 'inset(0 0 0 0)' });
+            gsap.set(nextWordLayers, { clipPath: 'inset(0 100% 0 0)' });
+            syncHeroSwapPills(nextWords);
+            renderHeroMedia(smoothProgress);
+            scheduleHeroWordSwap();
+          },
+        })
+          .to(currentWords, {
+            clipPath: 'inset(0 100% 0 0)',
+            duration: 0.58,
+            stagger: 0.035,
+          }, 0)
+          .to([heroToneShell, heroSubjectShell], {
+            width: (index) => `${index === 0 ? targetWidths.tone : targetWidths.subject}px`,
+            duration: 1.05,
+            ease: 'power4.inOut',
+          }, 0.12)
+          .to(nextWordLayers, {
+            clipPath: 'inset(0 0% 0 0)',
+            duration: 0.7,
+            ease: 'power4.out',
+            stagger: 0.035,
+          }, 0.46);
+      }
 
       function measureHeroMedia() {
         media.style.width = '';
@@ -2503,6 +2726,7 @@
           endHeight: Math.max(window.innerHeight - 160, imageWrap.offsetHeight),
           pillWidths: heroPills.map((pill) => pill.offsetWidth),
         };
+        syncHeroSwapPills();
       }
 
       function updateTargetProgress() {
@@ -2533,7 +2757,7 @@
 
         const pillShrinkProgress = clamp01(progress * 1.45);
         heroPills.forEach((pill, index) => {
-          const startWidth = metrics.pillWidths[index];
+          const startWidth = heroDynamicPillWidths?.[index] ?? metrics.pillWidths[index];
           const minWidth = Math.min(startWidth, index === 2 ? 72 : 96);
           const width = lerp(startWidth, minWidth, pillShrinkProgress);
           pill.style.width = `${width}px`;
@@ -2558,6 +2782,7 @@
           heroPills.forEach((pill) => pill.classList.add('hero-pill-scroll-ready'));
           measureHeroMedia();
           renderHeroMedia(smoothProgress);
+          scheduleHeroWordSwap();
         }, 1750);
         measureHeroMedia();
         updateTargetProgress();
