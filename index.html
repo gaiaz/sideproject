@@ -316,6 +316,7 @@
       color: var(--black);
       position: relative;
       z-index: 2;
+      text-decoration: none;
     }
 
     .nav-logo span { display: block; }
@@ -725,6 +726,8 @@
       object-position: center top;
       display: block;
       opacity: 1;
+      transform-origin: center center;
+      will-change: transform;
     }
 
     @media (min-width: 2200px) {
@@ -1713,6 +1716,7 @@
       line-height: 0.78;
       color: var(--black);
       flex: 0 0 auto;
+      text-decoration: none;
     }
 
     .footer-logo sup {
@@ -1915,7 +1919,7 @@
 
   </style>
 </head>
-<body>
+<body id="top">
   <div class="site-cursor" aria-hidden="true">
     <span class="site-cursor__axis site-cursor__axis--x"></span>
     <span class="site-cursor__axis site-cursor__axis--y"></span>
@@ -1927,10 +1931,10 @@
   <!-- ── NAV ── -->
   <nav>
     <span class="nav-cursor-blob" aria-hidden="true"></span>
-    <div class="nav-logo" aria-label="Side Project">
+    <a class="nav-logo home-link" href="#top" aria-label="Torna all'inizio">
       <span>Side<sup>®</sup></span>
       <span>project:</span>
-    </div>
+    </a>
     <ul class="nav-links">
       <li><a href="#">Who we are</a></li>
       <li><a href="#">What we do</a></li>
@@ -2253,10 +2257,10 @@
   <footer class="site-footer">
     <div class="footer-top">
       <p class="footer-question">Got a great idea you want to bring to life?</p>
-      <div class="footer-logo" aria-label="Side Project">
+      <a class="footer-logo home-link" href="#top" aria-label="Torna all'inizio">
         <span>Side<sup>®</sup></span>
         <span>project:</span>
-      </div>
+      </a>
     </div>
 
     <div class="footer-links" aria-label="Footer quick links">
@@ -2319,6 +2323,7 @@
 
     const _navLinks = document.querySelector('.nav-links');
     const _navContact = document.querySelector('.nav-contact');
+    const _nav = document.querySelector('nav');
     let _navExpandT1 = null;
     let _navExpandT2 = null;
 
@@ -2385,6 +2390,29 @@
       lastScrollY = scrollY;
     }
 
+    if (_nav) {
+      _nav.addEventListener('click', (event) => {
+        if (!document.body.classList.contains('nav-compact')) return;
+        event.preventDefault();
+        window.clearTimeout(navCompactTimer);
+        expandNav();
+      });
+    }
+
+    document.querySelectorAll('.home-link').forEach((link) => {
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        window.clearTimeout(navCompactTimer);
+        expandNav();
+
+        if (window.sideProjectLenis) {
+          window.sideProjectLenis.scrollTo(0, { duration: 1.05 });
+        } else {
+          window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+        }
+      });
+    });
+
     if (window.Lenis && !prefersReducedMotion) {
       const lenis = new Lenis({
         duration: 1.18,
@@ -2438,6 +2466,7 @@
     const hero = document.querySelector('.hero');
     const media = document.querySelector('.hero-media-shell');
     const imageWrap = document.querySelector('.hero-image-wrap');
+    const heroPhoto = document.querySelector('.hero-photo');
     const scrollIndicator = document.querySelector('.scroll-indicator');
     const heroTextLayer = document.querySelector('.hero-inner');
     const heroPills = Array.from(document.querySelectorAll('.hero-pill-one, .hero-pill-two, .pill-fixed'));
@@ -2496,6 +2525,10 @@
 
         if (heroTextLayer) {
           heroTextLayer.style.opacity = String(clamp01(1 - progress * 1.65));
+        }
+
+        if (heroPhoto) {
+          heroPhoto.style.transform = `scale(${lerp(1, 1.085, progress)})`;
         }
 
         const pillShrinkProgress = clamp01(progress * 1.45);
