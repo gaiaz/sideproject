@@ -6,10 +6,69 @@
   <title>Side Project®</title>
   <link rel="preload" as="image" href="assets/hero-image.png">
   <link rel="preload" as="image" href="assets/scroll-arrow.svg">
+  <link rel="preload" as="font" href="assets/fonts/PPNeueMontreal-Book.woff2" type="font/woff2" crossorigin>
+  <link rel="preload" as="font" href="assets/fonts/PPNeueMontreal-Medium.woff2" type="font/woff2" crossorigin>
+  <link rel="preload" as="font" href="assets/fonts/PPNeueMontreal-Thin.woff2" type="font/woff2" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
+    @font-face {
+      font-family: 'PP Neue Montreal';
+      src: url('assets/fonts/PPNeueMontreal-Thin.woff2') format('woff2');
+      font-weight: 100;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'PP Neue Montreal';
+      src: url('assets/fonts/PPNeueMontreal-Book.woff2') format('woff2');
+      font-weight: 300;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'PP Neue Montreal';
+      src: url('assets/fonts/PPNeueMontreal-Book.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'PP Neue Montreal';
+      src: url('assets/fonts/PPNeueMontreal-Medium.woff2') format('woff2');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'PP Neue Montreal';
+      src: url('assets/fonts/PPNeueMontreal-Bold.woff2') format('woff2');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'PP Neue Montreal';
+      src: url('assets/fonts/PPNeueMontreal-Italic.woff2') format('woff2');
+      font-weight: 400;
+      font-style: italic;
+      font-display: swap;
+    }
+
+    @font-face {
+      font-family: 'PP Neue Montreal';
+      src: url('assets/fonts/PPNeueMontreal-SemiBolditalic.woff2') format('woff2');
+      font-weight: 600;
+      font-style: italic;
+      font-display: swap;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     ::selection {
@@ -23,7 +82,7 @@
       --grey: #F6F6F6;
       --white: #FFFFFF;
       --font: 'PP Neue Montreal', 'Geist', 'Helvetica Neue', Arial, sans-serif;
-      --font-ui: 'Geist', 'Helvetica Neue', sans-serif;
+      --font-ui: 'PP Neue Montreal', 'Geist', 'Helvetica Neue', sans-serif;
       --hero-media-start-width: min(65.34vw, 988px);
       --hero-image-start-height: min(608.94px, 62vh);
       --hero-media-start-top: min(787px, 80.2vh);
