@@ -2258,15 +2258,20 @@
     }
 
     body.case-mode-text .portfolio-brief-row {
-      max-width: 1180px;
+      width: 100%;
+      max-width: calc(var(--text-mode-label) + 40px + 760px);
       margin-top: 56px;
-      gap: 80px;
-      justify-content: flex-start;
+      margin-left: auto;
+      margin-right: auto;
+      display: grid;
+      grid-template-columns: var(--text-mode-label) var(--text-mode-content);
+      justify-content: center;
+      gap: 40px;
     }
 
     body.case-mode-text .portfolio-brief {
-      width: min(100%, 720px);
-      flex-basis: 720px;
+      width: 100%;
+      flex-basis: auto;
       font-size: clamp(28px, 3vw, 44px);
       line-height: 1.02;
     }
@@ -4008,7 +4013,8 @@
       }
 
       body.case-mode-text .portfolio-brief-row {
-        flex-direction: column;
+        max-width: none;
+        grid-template-columns: 1fr;
         gap: 32px;
       }
 
