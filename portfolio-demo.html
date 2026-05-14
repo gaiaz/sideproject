@@ -2253,7 +2253,10 @@
     }
 
     body.case-mode-text .portfolio-title {
-      max-width: 1180px;
+      width: 100%;
+      max-width: calc(var(--text-mode-label) + 40px + 760px);
+      margin-left: auto;
+      margin-right: auto;
       font-size: clamp(72px, 9.2vw, 138px);
     }
 
@@ -4010,6 +4013,10 @@
       body.case-mode-text .portfolio-hero {
         padding-top: 132px;
         padding-bottom: 64px;
+      }
+
+      body.case-mode-text .portfolio-title {
+        max-width: none;
       }
 
       body.case-mode-text .portfolio-brief-row {
