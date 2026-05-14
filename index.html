@@ -291,7 +291,7 @@
       left: 50%;
       transform: translateX(-50%);
       width: calc(100% - 40px);
-      max-width: 1472px;
+      max-width: none;
       background: var(--white);
       border-radius: 999px;
       padding: 10px 40px;
@@ -301,7 +301,7 @@
       z-index: 1000;
       isolation: isolate;
       transition:
-        max-width 800ms cubic-bezier(0.66, 0, 0.16, 1),
+        width 800ms cubic-bezier(0.66, 0, 0.16, 1),
         height 800ms cubic-bezier(0.66, 0, 0.16, 1),
         padding 800ms cubic-bezier(0.66, 0, 0.16, 1),
         top 800ms cubic-bezier(0.66, 0, 0.16, 1),
@@ -311,13 +311,13 @@
         backdrop-filter 900ms ease,
         opacity 260ms ease,
         transform 800ms cubic-bezier(0.66, 0, 0.16, 1);
-      will-change: max-width, padding, transform;
+      will-change: width, padding, transform;
     }
 
     body.nav-compact nav {
       top: 24px;
+      width: 226px;
       height: 72px;
-      max-width: 226px;
       padding: 11px 24px 11px 40px;
       gap: 0px;
       background: rgba(255, 255, 255, 0.8);
@@ -743,7 +743,7 @@
       border-radius: 999px;
       display: flex;
       align-items: center;
-      padding: 0 32px;
+      padding: 0 42px 0 32px;
       height: clamp(72px, 10.5vw, 154px);
       flex-shrink: 0;
       overflow: hidden;
@@ -840,10 +840,6 @@
         --hero-media-start-top: 1047.79px;
       }
 
-      nav {
-        max-width: 1920px;
-      }
-
       .hero-inner {
         padding-top: 257.82px;
         padding-inline: 0;
@@ -892,7 +888,7 @@
       .pill-outline {
         height: 198.734px;
         border-width: 10.159px;
-        padding-inline: 40.635px;
+        padding: 0 42px 0 32px;
       }
 
       .asterisk {
@@ -1058,12 +1054,15 @@
     .works-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 
     .work-card {
+      display: block;
       background: var(--white);
       border-radius: 24px;
       overflow: hidden;
       padding: 8px;
       flex: 1 0 488px;
       cursor: none;
+      color: inherit;
+      text-decoration: none;
     }
 
     .work-card-image {
@@ -1106,6 +1105,95 @@
     .work-card-category{ font-weight: 300; font-size: 18px; letter-spacing: -0.18px; line-height: 1.4; }
     .work-card-year    { font-weight: 500; font-size: 18px; letter-spacing: -0.18px; line-height: 1.4; white-space: nowrap; }
     .work-card-year .star { color: var(--orange); }
+
+    .case-transition {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: var(--orange);
+      transform: translateY(100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: transform 940ms cubic-bezier(0.86, 0, 0.07, 1);
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    .case-transition.is-active {
+      transform: translateY(0);
+    }
+
+    .case-transition__ticker {
+      width: 100%;
+      overflow: hidden;
+      color: var(--black);
+      transform: translateY(36px);
+      opacity: 0;
+      transition: transform 780ms cubic-bezier(0.16, 1, 0.3, 1), opacity 420ms ease;
+    }
+
+    .case-transition__track {
+      width: max-content;
+      display: flex;
+      align-items: center;
+      flex: 0 0 auto;
+      white-space: nowrap;
+      animation: caseTicker 22s linear infinite;
+      animation-delay: var(--case-ticker-delay, 0ms);
+    }
+
+    .case-transition__item {
+      display: inline-flex;
+      align-items: center;
+      gap: 24px;
+      padding-right: 24px;
+      flex-shrink: 0;
+    }
+
+    .case-transition__text,
+    .case-transition__pill {
+      font-size: clamp(72px, 7.4vw, 112px);
+      font-weight: 300;
+      line-height: 1;
+      letter-spacing: -0.05em;
+      text-transform: uppercase;
+    }
+
+    .case-transition__pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: clamp(86px, 9.7vw, 147px);
+      padding: 6px 32px;
+      border: 8px solid var(--black);
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+
+    .case-transition__dot {
+      width: clamp(60px, 7vw, 106px);
+      height: clamp(60px, 7vw, 106px);
+      flex: 0 0 clamp(60px, 7vw, 106px);
+      border: 8px solid var(--black);
+      border-radius: 50%;
+      background: var(--black);
+    }
+
+    .case-transition.is-active .case-transition__ticker {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @keyframes caseTicker {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    body.case-transitioning {
+      overflow: hidden;
+    }
 
     /* ── CTA ─────────────────────────────────────────── */
     .cta-section {
@@ -1550,6 +1638,21 @@
     @media (max-width: 560px) {
       .logos-grid {
         grid-template-columns: 1fr;
+      }
+
+      .case-transition__text,
+      .case-transition__pill {
+        font-size: clamp(54px, 14.5vw, 84px);
+      }
+
+      .case-transition__pill {
+        min-height: 86px;
+        padding: 4px 20px;
+        border-width: 5px;
+      }
+
+      .case-transition__dot {
+        border-width: 5px;
       }
     }
 
@@ -2028,6 +2131,30 @@
     <span class="site-cursor__axis site-cursor__axis--y"></span>
     <span class="site-cursor__dot"><span class="site-cursor__label">VIEW CASE</span></span>
   </div>
+  <div class="case-transition" aria-hidden="true">
+    <div class="case-transition__ticker">
+      <div class="case-transition__track">
+        <div class="case-transition__item">
+          <span class="case-transition__text">CASE</span><span class="case-transition__pill">STUDY</span><span class="case-transition__dot"></span>
+        </div>
+        <div class="case-transition__item">
+          <span class="case-transition__text">CASE</span><span class="case-transition__pill">STUDY</span><span class="case-transition__dot"></span>
+        </div>
+        <div class="case-transition__item">
+          <span class="case-transition__text">CASE</span><span class="case-transition__pill">STUDY</span><span class="case-transition__dot"></span>
+        </div>
+        <div class="case-transition__item" aria-hidden="true">
+          <span class="case-transition__text">CASE</span><span class="case-transition__pill">STUDY</span><span class="case-transition__dot"></span>
+        </div>
+        <div class="case-transition__item" aria-hidden="true">
+          <span class="case-transition__text">CASE</span><span class="case-transition__pill">STUDY</span><span class="case-transition__dot"></span>
+        </div>
+        <div class="case-transition__item" aria-hidden="true">
+          <span class="case-transition__text">CASE</span><span class="case-transition__pill">STUDY</span><span class="case-transition__dot"></span>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <main class="page-content">
 
@@ -2149,18 +2276,18 @@
   <section class="works-section">
     <div class="works-grid">
 
-      <div class="work-card">
+      <a class="work-card work-card--case-link" href="portfolio-demo.html" data-case-transition>
         <div class="work-card-image">
-          <img src="assets/work-cuffie-belle.png" alt="Cuffie belle">
+          <img src="assets/project-index-image.png" alt="Che Dio perdona tutti production still with pastries">
         </div>
         <div class="work-card-info">
           <div class="work-card-meta">
-            <span class="work-card-title">Cuffie belle</span>
-            <span class="work-card-category">App visual direction</span>
+            <span class="work-card-title">Che Dio perdona tutti</span>
+            <span class="work-card-category">Social Campaign</span>
           </div>
           <span class="work-card-year"><span class="star">*</span>2026</span>
         </div>
-      </div>
+      </a>
 
       <div class="work-card">
         <div class="work-card-image">
@@ -2426,6 +2553,52 @@
     if (canRunGsap) {
       gsap.registerPlugin(ScrollTrigger);
     }
+
+    const caseTransition = document.querySelector('.case-transition');
+    const caseTransitionLinks = document.querySelectorAll('[data-case-transition]');
+    let isCaseTransitioning = false;
+
+    caseTransitionLinks.forEach((link) => {
+      link.addEventListener('click', (event) => {
+        const href = link.getAttribute('href');
+        const opensNewContext = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target === '_blank';
+
+        if (!href || href.startsWith('#') || opensNewContext || isCaseTransitioning) {
+          return;
+        }
+
+        event.preventDefault();
+        isCaseTransitioning = true;
+        window.sessionStorage?.setItem('sideProjectCaseTransition', 'che-dio');
+        document.body.classList.add('case-transitioning');
+        document.body.classList.remove('cursor-on-work');
+
+        if (caseTransition && !prefersReducedMotion) {
+          caseTransition.classList.remove('is-active');
+          caseTransition.getBoundingClientRect();
+          caseTransition.classList.add('is-active');
+
+          window.setTimeout(() => {
+            const activeTrack = caseTransition.querySelector('.case-transition__track');
+            const activeTransform = activeTrack ? window.getComputedStyle(activeTrack).transform : '';
+            const matrix = activeTransform && activeTransform !== 'none' ? new DOMMatrixReadOnly(activeTransform) : null;
+            const loopDistance = activeTrack ? activeTrack.scrollWidth / 2 : 0;
+            const translateX = matrix ? matrix.m41 : 0;
+            const tickerProgress = loopDistance > 0
+              ? (((-translateX % loopDistance) + loopDistance) % loopDistance) / loopDistance
+              : 0;
+            window.sessionStorage?.setItem('sideProjectCaseTickerProgress', String(tickerProgress));
+            window.sessionStorage?.setItem('sideProjectCaseTickerSavedAt', String(Date.now()));
+            window.location.href = href;
+          }, 1180);
+          return;
+        }
+
+        window.setTimeout(() => {
+          window.location.href = href;
+        }, 120);
+      });
+    });
 
     const _navLinks = document.querySelector('.nav-links');
     const _navContact = document.querySelector('.nav-contact');
